@@ -23,30 +23,40 @@
  */
 package eu.arthepsy.sonar.plugins.elixir.language;
 
-import eu.arthepsy.sonar.plugins.elixir.ElixirConfiguration;
-import org.apache.commons.lang.StringUtils;
+//import eu.arthepsy.sonar.plugins.elixir.ElixirConfiguration;
+//import org.sonar.api.internal.apachecommons.lang.StringUtils;
+
+//import org.sonar.api.utils.log.Logger;
+//import org.sonar.api.utils.log.LoggerFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+// import org.sonar.api.utils.log.*;
+
+import eu.arthepsy.sonar.plugins.elixir.ElixirConfiguration;
+
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.fs.FilePredicate;
 import org.sonar.api.batch.fs.FileSystem;
-import org.sonar.api.batch.Sensor;
-import org.sonar.api.batch.SensorContext;
+import org.sonar.api.batch.sensor.Sensor;
+import org.sonar.api.batch.sensor.SensorContext;
+import org.sonar.api.batch.sensor.SensorDescriptor;
 import org.sonar.api.measures.CoreMetrics;
-import org.sonar.api.resources.Project;
 import org.sonar.api.utils.ParsingUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+//import java.util.regex.Matcher;
+//import java.util.regex.Pattern;
 
 public class ElixirMeasureSensor implements Sensor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ElixirMeasureSensor.class);
     private static final String LOG_PREFIX = ElixirConfiguration.LOG_PREFIX;
+
+    private static final Logger LOG = LoggerFactory.getLogger(ElixirMeasureSensor.class);
 
     private final FileSystem fileSystem;
     private final FilePredicate mainFilePredicate;
@@ -60,22 +70,23 @@ public class ElixirMeasureSensor implements Sensor {
     }
 
     @Override
-    public void analyse(Project project, SensorContext context) {
-        LOG.info("[elixir] analyse");
+    public void describe(SensorDescriptor descriptor) {
+        descriptor.name("Elixir Sensors");
+    }
+
+    @Override
+    public void execute(SensorContext context) {
+        LOG.info("[elixir] analyze");
         for (InputFile file : fileSystem.inputFiles(mainFilePredicate )) {
             processMainFile(file, context);
         }
     }
 
-    @Override
-    public boolean shouldExecuteOnProject(Project project) {
-        return fileSystem.hasFiles(mainFilePredicate);
-    }
-
     private void processMainFile(InputFile inputFile, SensorContext context) {
         List<String> lines;
         try {
-            lines = Files.readAllLines(Paths.get(inputFile.absolutePath()), fileSystem.encoding());
+        	//replaced inputFile.absolutePath()
+            lines = Files.readAllLines(Paths.get(inputFile.uri()), fileSystem.encoding());
         } catch (IOException e) {
             LOG.warn(LOG_PREFIX + "could not process file: " + inputFile.toString());
             return;
@@ -83,22 +94,62 @@ public class ElixirMeasureSensor implements Sensor {
         ElixirParser parser = new ElixirParser();
         parser.parse(lines);
 
-        LOG.debug(LOG_PREFIX + "processing file: " + inputFile.toString());
+        LOG.warn(LOG_PREFIX + "processing file: " + inputFile.toString());
         double linesOfCode = parser.getLineCount() - parser.getEmptyLineCount() - parser.getCommentLineCount();
-        context.saveMeasure(inputFile, CoreMetrics.LINES, (double)parser.getLineCount());
-        context.saveMeasure(inputFile, CoreMetrics.NCLOC, (double)linesOfCode);
-        context.saveMeasure(inputFile, CoreMetrics.COMMENT_LINES, (double)parser.getCommentLineCount());
+
+        context.<Integer>newMeasure()
+        .forMetric(CoreMetrics.LINES)
+        .on(inputFile)
+        .withValue(parser.getLineCount())
+        .save();
+
+        context.<Integer>newMeasure()
+        .forMetric(CoreMetrics.NCLOC)
+        .on(inputFile)
+        .withValue((int) linesOfCode)
+        .save();
+
+        context.<Integer>newMeasure()
+        .forMetric(CoreMetrics.COMMENT_LINES)
+        .on(inputFile)
+        .withValue((int) parser.getCommentLineCount())
+        .save();
 
         double publicApi = parser.getPublicFunctionCount() + parser.getClassCount();
         double documentedApi = parser.getDocumentedPublicFunctionCount() + parser.getDocumentedClassCount();
         double undocumentedApi = publicApi - documentedApi;
         double documentedApiDensity = (publicApi == 0 ? 100.0 : ParsingUtils.scaleValue(documentedApi / publicApi * 100, 2));
-        context.saveMeasure(inputFile, CoreMetrics.PUBLIC_API, publicApi);
-        context.saveMeasure(inputFile, CoreMetrics.PUBLIC_UNDOCUMENTED_API, undocumentedApi);
-        context.saveMeasure(inputFile, CoreMetrics.PUBLIC_DOCUMENTED_API_DENSITY, documentedApiDensity);
 
-        double functionCount = parser.getPublicFunctionCount() + parser.getPrivateFunctionCount();
-        context.saveMeasure(inputFile, CoreMetrics.CLASSES, (double)parser.getClassCount());
-        context.saveMeasure(inputFile, CoreMetrics.FUNCTIONS, (double)(functionCount));
+        context.<Integer>newMeasure()
+        .forMetric(CoreMetrics.PUBLIC_API)
+        .on(inputFile)
+        .withValue((int) publicApi)
+        .save();
+
+        context.<Integer>newMeasure()
+        .forMetric(CoreMetrics.PUBLIC_UNDOCUMENTED_API)
+        .on(inputFile)
+        .withValue((int) undocumentedApi)
+        .save();
+
+        context.<Double>newMeasure()
+        .forMetric(CoreMetrics.PUBLIC_DOCUMENTED_API_DENSITY)
+        .on(inputFile)
+        .withValue(documentedApiDensity)
+        .save();
+
+        int functionCount = parser.getPublicFunctionCount() + parser.getPrivateFunctionCount();
+
+        context.<Integer>newMeasure()
+        .forMetric(CoreMetrics.CLASSES)
+        .on(inputFile)
+        .withValue(parser.getClassCount())
+        .save();
+
+        context.<Integer>newMeasure()
+        .forMetric(CoreMetrics.FUNCTIONS)
+        .on(inputFile)
+        .withValue(functionCount)
+        .save();
     }
 }

@@ -23,7 +23,7 @@
  */
 package eu.arthepsy.sonar.plugins.elixir.language;
 
-import org.apache.commons.lang.StringUtils;
+import org.sonar.api.internal.apachecommons.lang.StringUtils;
 
 import java.util.List;
 import java.util.regex.Matcher;

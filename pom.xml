@@ -4,11 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.codehaus.sonar-plugins</groupId>
-        <artifactId>parent</artifactId>
-        <version>19</version>
-    </parent>
+    <!-- <parent>
+        <groupId>org.sonarsource.api.plugin</groupId>
+        <artifactId>sonar-plugin-api</artifactId>
+        <version>10.7.0.2191</version>
+    </parent> -->
 
     <modules>
         <module>sonar-elixir-plugin</module>
@@ -48,40 +48,22 @@
     </scm>
 
     <properties>
-        <dev.nick>arthepsy</dev.nick>
-        <dev.name>Andris Raugulis</dev.name>
-        <dev.mail>moo@arthepsy.eu</dev.mail>
-        <sonar.version>4.5</sonar.version>
+        <dev.nick>fedebo</dev.nick>
+        <dev.name>Federico Bo</dev.name>
+        <dev.mail>federico.bo@pluribus-one.it</dev.mail>
+        <sonar.apiVersion>10.6.0.2114</sonar.apiVersion>
         <maven.buildNumber.timestampFormat>{0,date,yyyy-MM-dd HH:mm:ssa}</maven.buildNumber.timestampFormat>
+        <!-- 10.7.0.2191 -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>org.codehaus.sonar</groupId>
+                <groupId>org.sonarsource.api.plugin</groupId>
                 <artifactId>sonar-plugin-api</artifactId>
-                <version>${sonar.version}</version>
+                <version>${sonar.apiVersion}</version>
                 <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.codehaus.sonar</groupId>
-                <artifactId>sonar-core</artifactId>
-                <version>${sonar.version}</version>
-                <scope>provided</scope>
-            </dependency>
-            <!-- unit tests -->
-            <dependency>
-                <groupId>org.codehaus.sonar</groupId>
-                <artifactId>sonar-testing-harness</artifactId>
-                <version>${sonar.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-all</artifactId>
-                <version>1.10.19</version>
-                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -92,7 +74,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.3</version>
+                    <version>3.13.0</version>
                     <configuration>
                         <compilerArgs>
                             <arg>-Xlint:unchecked</arg>
@@ -104,9 +86,25 @@
         </pluginManagement>
         <plugins>
             <plugin>
+                <groupId>org.sonarsource.sonar-packaging-maven-plugin</groupId>
+                <artifactId>sonar-packaging-maven-plugin</artifactId>
+                <version>1.23.0.740</version>
+                <extensions>true</extensions>
+                <configuration>
+                  <pluginKey>elixir</pluginKey>
+                  <pluginClass>eu.arthepsy.sonar.plugins.elixir.ElixirPlugin</pluginClass>
+                  <!-- Optional, only if you are sure to support older versions of the plugin API than the
+                  one you are compiling against -->
+                  <pluginIssueTrackerUrl>http://localhost:9000</pluginIssueTrackerUrl>
+                  <pluginSourcesUrl>http://localhost:9000</pluginSourcesUrl>
+                  <pluginUrl>http://localhost:9000</pluginUrl>                  
+                  <pluginApiMinVersion>9.5</pluginApiMinVersion>
+                </configuration>
+              </plugin>
+            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.5.201505241946</version>
+                <version>0.8.12</version>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
@@ -117,23 +115,9 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.eluder.coveralls</groupId>
+                <groupId>org.codehaus.mojo</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
-                <version>3.1.0</version>
-            </plugin>
-            <!-- use MIT license -->
-            <plugin>
-                <groupId>com.mycila.maven-license-plugin</groupId>
-                <artifactId>maven-license-plugin</artifactId>
-                <version>1.9.0</version>
-                <configuration>
-                    <header>org/sonar/plugins/licenseheaders/MIT.txt</header>
-                    <properties>
-                        <year>2015</year>
-                        <owner>${dev.name}</owner>
-                        <mailto>${dev.mail}</mailto>
-                    </properties>
-                </configuration>
+                <version>4.5.0-M3</version>
             </plugin>
         </plugins>
     </build>
