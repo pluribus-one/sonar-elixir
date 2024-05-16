@@ -23,21 +23,19 @@
  */
 package eu.arthepsy.sonar.plugins.elixir;
 
-import com.google.common.collect.ImmutableList;
 import eu.arthepsy.sonar.plugins.elixir.language.Elixir;
-import eu.arthepsy.sonar.plugins.elixir.language.ElixirMeasureSensor;
-import eu.arthepsy.sonar.plugins.elixir.rule.ElixirQualityProfile;
+import eu.arthepsy.sonar.plugins.elixir.language.ElixirQualityProfile;
+import eu.arthepsy.sonar.plugins.elixir.measures.ElixirMeasureSensor;
+import eu.arthepsy.sonar.plugins.elixir.settings.ElixirProperties;
+
 import org.sonar.api.Plugin;
 
 public class ElixirPlugin implements Plugin {
 
   @Override
   public void define(Context context) {
-        ImmutableList.Builder<Object> builder = ImmutableList.builder();
-        builder.addAll(ElixirConfiguration.getPropertyDefinitions());
-        builder.add(Elixir.class);
-        builder.add(ElixirQualityProfile.class);
-        builder.add(ElixirMeasureSensor.class);
-        context.addExtension(builder.build());
+        context.addExtensions(Elixir.class, ElixirQualityProfile.class);
+        context.addExtensions(ElixirProperties.getProperties());
+        context.addExtension(ElixirMeasureSensor.class);
   }
 }

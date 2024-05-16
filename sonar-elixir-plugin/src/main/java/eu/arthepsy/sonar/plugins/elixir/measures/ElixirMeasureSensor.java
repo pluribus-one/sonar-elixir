@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package eu.arthepsy.sonar.plugins.elixir.language;
+package eu.arthepsy.sonar.plugins.elixir.measures;
 
 //import eu.arthepsy.sonar.plugins.elixir.ElixirConfiguration;
 //import org.sonar.api.internal.apachecommons.lang.StringUtils;
@@ -34,7 +34,9 @@ import org.slf4j.LoggerFactory;
 
 // import org.sonar.api.utils.log.*;
 
-import eu.arthepsy.sonar.plugins.elixir.ElixirConfiguration;
+import eu.arthepsy.sonar.plugins.elixir.settings.ElixirProperties;
+import eu.arthepsy.sonar.plugins.elixir.language.Elixir;
+import eu.arthepsy.sonar.plugins.elixir.language.ElixirParser;
 
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.fs.FilePredicate;
@@ -54,7 +56,7 @@ import java.util.List;
 
 public class ElixirMeasureSensor implements Sensor {
 
-    private static final String LOG_PREFIX = ElixirConfiguration.LOG_PREFIX;
+    private static final String LOG_PREFIX = ElixirProperties.LOG_PREFIX;
 
     private static final Logger LOG = LoggerFactory.getLogger(ElixirMeasureSensor.class);
 
@@ -66,12 +68,14 @@ public class ElixirMeasureSensor implements Sensor {
         this.fileSystem = fileSystem;
         this.mainFilePredicate = fileSystem.predicates().and(
                 fileSystem.predicates().hasType(InputFile.Type.MAIN),
-                fileSystem.predicates().hasLanguage(Elixir.KEY));
+                fileSystem.predicates().hasLanguages(Elixir.KEY));
     }
 
     @Override
     public void describe(SensorDescriptor descriptor) {
-        descriptor.name("Elixir Sensors");
+        descriptor.name("Elixir Sensors")   
+        .onlyOnLanguages(Elixir.KEY)
+        .onlyOnFileType(InputFile.Type.MAIN);;
     }
 
     @Override

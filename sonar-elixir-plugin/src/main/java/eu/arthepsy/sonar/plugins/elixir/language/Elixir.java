@@ -23,20 +23,25 @@
  */
 package eu.arthepsy.sonar.plugins.elixir.language;
 
+import org.sonar.api.config.Configuration;
 import org.sonar.api.resources.AbstractLanguage;
+
+import eu.arthepsy.sonar.plugins.elixir.settings.ElixirProperties;
 
 public class Elixir extends AbstractLanguage {
 
-    public static final String KEY = "elixir";
     public static final String NAME = "Elixir";
-    public static final String[] FILE_SUFFIXES = {"ex", "exs"};
+    public static final String KEY = "elixir";
 
-    public Elixir() {
+    private final Configuration config;
+
+    public Elixir(Configuration config) {
         super(KEY, NAME);
+        this.config = config;
     }
 
     @Override
     public String[] getFileSuffixes() {
-        return FILE_SUFFIXES;
+      return config.getStringArray(ElixirProperties.FILE_SUFFIXES_KEY);
     }
 }

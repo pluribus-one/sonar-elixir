@@ -21,23 +21,21 @@
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   * THE SOFTWARE.
   */
- package eu.arthepsy.sonar.plugins.elixir.rule;
+ package eu.arthepsy.sonar.plugins.elixir.language;
 
  
- import eu.arthepsy.sonar.plugins.elixir.language.Elixir;
  import org.sonar.api.server.profile.BuiltInQualityProfilesDefinition;
 
 
  public class ElixirQualityProfile implements BuiltInQualityProfilesDefinition {
-     private static final String DEFAULT_PROFILE = "Sonar way";
-//	 private static final String PROFILE_NAME = "Elixir";
+     //private static final String DEFAULT_PROFILE = "Sonar way";
+	 private static final String PROFILE_NAME = "Elixir";
 
     @Override
     public void define(Context context){
 //    	context.profile(PROFILE_NAME, DEFAULT_PROFILE);
-        NewBuiltInQualityProfile profile = context.createBuiltInQualityProfile(DEFAULT_PROFILE, Elixir.KEY);
+        NewBuiltInQualityProfile profile = context.createBuiltInQualityProfile(PROFILE_NAME, Elixir.KEY);
         profile.setDefault(true);
         profile.done();
-
     }
  }
